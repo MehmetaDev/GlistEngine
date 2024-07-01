@@ -7,24 +7,14 @@
 
 #include "gTexture.h"
 #include <iostream>
-#if defined(WIN32) || defined(LINUX)
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
-#if TARGET_OS_OSX
-#include <OpenGL/gl.h>
-#include <GL/glew.h>
-#include <OpenGL/glu.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
-#endif
-#include "gPlane.h"
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #endif
 #include "stb/stb_image.h"
+#include "stb/stb_image_write.h"
+
+#include "gPlane.h"
+#include "gShader.h"
 
 const int gTexture::TEXTURETYPE_DIFFUSE = 0;
 const int gTexture::TEXTURETYPE_SPECULAR = 1;
@@ -124,7 +114,12 @@ gTexture::gTexture(int w, int h, int format, bool isFbo) {
 	ismaskloaded = false;
 	isloaded = false;
 	masktexture = nullptr;
-	componentnum = 0;
+	if (format == GL_RED) componentnum = 1;
+	else if (format == GL_GREEN) componentnum = 1;
+	else if (format == GL_BLUE) componentnum = 1;
+	else if (format == GL_RG) componentnum = 2;
+	else if (format == GL_RGB) componentnum = 3;
+	else if (format == GL_RGBA) componentnum = 4;
     data = nullptr;
 	datahdr = nullptr;
 	glGenTextures(1, &id);
@@ -614,5 +609,39 @@ std::string gTexture::getFileName(const std::string& fname) {
 	return (std::string::npos == pos)
 				   ? ""
 				   : fname.substr(pos + 1, fname.size());
+}
+
+void gTexture::save(std::string fullpath) {
+	unsigned char* pixels = new unsigned char[width * height * componentnum];
+	bind();
+
+	glGetTexImage(GL_TEXTURE_2D,
+	    0,
+	    format,
+	    GL_UNSIGNED_BYTE,
+	    pixels);
+
+	// flip back vertically if fbo or hdr
+	if (isfbo || ishdr) {
+		unsigned char* temppix = new unsigned char[width * componentnum];
+		int linenum = height / 2;
+		for(int i = 0; i < linenum; i++) {
+			int afirst = i * width * componentnum;
+			int alast = afirst + width * componentnum;
+			int bfirst = (height - i - 1) * width * componentnum;
+			int blast = bfirst + width * componentnum;
+			std::copy(pixels + afirst, pixels + alast, temppix);
+			std::copy(pixels + bfirst, pixels + blast, pixels + afirst);
+			std::copy(temppix, temppix + (width * componentnum), pixels + bfirst);
+		}
+		delete[] temppix;
+	}
+
+	stbi_write_png(fullpath.c_str(), width, height, componentnum, pixels, width * componentnum * sizeof(unsigned char));
+	delete[] pixels;
+}
+
+void gTexture::saveTexture(std::string fileName) {
+	save(gGetTexturesDir() + fileName);
 }
 

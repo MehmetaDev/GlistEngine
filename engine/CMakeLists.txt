@@ -10,6 +10,7 @@ endif()
 # Configure compiler and linker as you need
 set(GLIST_CXX_FLAGS_COMMON
     -stdlib=libc++
+    -d2ReducedOptimizeHugeFunctions
     -Wuninitialized
     -Wmultichar
     -ffunction-sections
@@ -161,6 +162,7 @@ set(SRC_FILES
 	${ENGINE_DIR}/graphics/primitives/gTube.cpp
 	${ENGINE_DIR}/graphics/gVbo.cpp
 	${ENGINE_DIR}/graphics/gFbo.cpp
+	${ENGINE_DIR}/graphics/gUbo.cpp
 	${ENGINE_DIR}/graphics/gRay.cpp
 	${ENGINE_DIR}/graphics/gBoundingBox.cpp
 	${ENGINE_DIR}/graphics/gRect.cpp
@@ -189,6 +191,7 @@ set(SRC_FILES
 	${ENGINE_DIR}/ui/gGUIColumnChart.cpp
 	${ENGINE_DIR}/ui/gGUITextbox.cpp
 	${ENGINE_DIR}/ui/gGUIText.cpp
+	${ENGINE_DIR}/ui/gGUITooltipText.cpp
 	${ENGINE_DIR}/ui/gGUIDivider.cpp
 	${ENGINE_DIR}/ui/gGUIToolbarButton.cpp
 	${ENGINE_DIR}/ui/gGUIProgressBar.cpp
@@ -247,6 +250,12 @@ set(SRC_FILES
 	${ENGINE_DIR}/graphics/posteffects/kerneleffects/gSharpen.cpp
 	${ENGINE_DIR}/graphics/posteffects/kerneleffects/gEdgeDetection.cpp
 )
+
+if(WIN32)
+	list(APPEND SRC_FILES
+		${ENGINE_DIR}/utils/gWindows.cpp
+	)
+endif()
 
 if(NOT (ANDROID OR IOS))
 	list(APPEND SRC_FILES
@@ -489,8 +498,8 @@ if(WIN32)
 		opengl32
 		glew32
 		dbghelp
-		msvcr100
-		psapi
+#		msvcr100
+#		psapi
 #		swscale-5
 #		swresample-3
 #		avutil-56

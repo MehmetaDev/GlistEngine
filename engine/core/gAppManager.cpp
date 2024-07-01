@@ -127,7 +127,6 @@ gAppManager::gAppManager(const std::string& appName, gBaseApp *baseApp, int widt
 		window = new gGLFWWindow();
 #endif
 		window->setEventHandler(eventhandler);
-		window->setTitle(appname);
 	} else {
 		usewindow = false;
 		window = nullptr;
@@ -166,6 +165,7 @@ void gAppManager::initialize() {
 
 	if(usewindow) {
 		window->initialize(width, height, windowmode, isresizable);
+		window->setTitle(appname);
 		// Update size
 		width = window->getWidth();
 		height = window->getHeight();
@@ -343,6 +343,18 @@ void gAppManager::setCursorMode(int cursorMode) {
     window->setCursorMode(cursorMode);
 }
 
+void gAppManager::setWindowIcon(std::string pngFullpath) {
+	window->setIcon(pngFullpath);
+}
+
+void gAppManager::setWindowIcon(unsigned char* imageData, int w, int h) {
+	window->setIcon(imageData, w, h);
+}
+
+void gAppManager::setWindowTitle(const std::string& windowTitle) {
+	window->setTitle(windowTitle);
+}
+
 bool gAppManager::isJoystickConnected(int joystickId) {
     if(joystickId >= maxjoysticknum) return false;
     return joystickconnected[joystickId];
@@ -409,6 +421,7 @@ void gAppManager::tick() {
             canvas->clearBackground();
             for (int i = 0; i < renderpassnum; i++) {
                 renderpassno = i;
+                canvas->getRenderer()->updateLights();
                 canvas->draw();
             }
         }

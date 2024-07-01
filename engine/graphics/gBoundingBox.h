@@ -21,6 +21,7 @@
 #include "gRenderObject.h"
 #include "gRay.h"
 #define GLM_ENABLE_EXPERIMENTAL
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -80,8 +81,8 @@ public:
 	bool intersectsOBB(gRay* ray);
 	float distanceOBB(gRay* ray);
 
-	void draw();
-	void drawOBB();
+	void draw() const;
+	void drawOBB() const;
 
 private:
 	static const int componentnum = 3;
